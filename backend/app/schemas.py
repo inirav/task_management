@@ -20,13 +20,13 @@ class Employee(EmployeeBase):
 
 class TaskBase(BaseModel):
     title: str
-    description: str
+    description: Optional[str] = None
     priority: str
     target_date: date
 
 
 class TaskCreate(TaskBase):
-    employee_ids: List[int]
+    employee_ids: Optional[List[int]] = []
 
 
 class TaskUpdate(TaskBase):

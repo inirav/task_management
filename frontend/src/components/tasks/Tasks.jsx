@@ -10,9 +10,10 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditIcon from '@mui/icons-material/Edit';
 import axiosInstance from '../../axiosConfig';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
@@ -20,10 +21,12 @@ import dayjs from 'dayjs';
 
 export default function Tasks() {
     const [tasks, setTasks] = useState([]);
+    const navigate = useNavigate();
   
     const fetchTasks = () => {
         axiosInstance.get('/tasks').then(resp => {
             if (resp.status >= 200 && resp.status <= 299) {
+                console.log("Fetched tasks: ", resp.data);
                 setTasks(resp.data);
             } else {
                 toast.error("Failed to fetch tasks.");
@@ -35,7 +38,7 @@ export default function Tasks() {
     };
 
     const deleteTask = (id) => {
-        axiosInstance.delete(`/tasks/${id}`).then(resp => {
+        axiosInstance.delete(`/tasks/${id}/`).then(resp => {
             if (resp.status >= 200 && resp.status <= 299) {
                 fetchTasks();
             } else {
@@ -73,8 +76,9 @@ export default function Tasks() {
                                 <TableCell sx={{ fontWeight: 'bold' }}>Title</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }} align="right">Target Date</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Priority</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }} align="right">Priority</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }} align="center">Employees</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }} align="center">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -86,8 +90,10 @@ export default function Tasks() {
                             </TableCell>
                             <TableCell>{item.description || 'No Description'}</TableCell>
                             <TableCell align="right">{dayjs(item.target_date).format('DD MMM YYYY')}</TableCell>
-                            <TableCell>{item.priority}</TableCell>
-                            <TableCell>
+                            <TableCell align="right">{item.priority}</TableCell>
+                            <TableCell align="center">{item.employees?.length}</TableCell>
+                            <TableCell align="center">
+                                <EditIcon color='primary' onClick={() => navigate(`/tasks/${item.id}/edit`)} sx={{ mx: 2 }} />
                                 <DeleteOutlineIcon color='error' onClick={() => deleteTask(item.id)} />
                             </TableCell>
                             </TableRow>

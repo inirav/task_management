@@ -15,7 +15,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../axiosConfig';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useParams  } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from "zod";
 import dayjs from 'dayjs';
@@ -26,8 +26,11 @@ const formSchema =  z.object({
     title: z.string().min(3),
     description: z.string().optional(),
     priority: z.enum(priorities),
-    target_date: z.string().date(),
-    employee_ids: z.array(),
+    target_date: z.instanceof(dayjs).or(z.string()).transform((val) => {
+      if (typeof val === 'string') return val;
+      return val.format('YYYY-MM-DD');
+    }),
+    employee_ids: z.array(z.number()).optional(),
 })
   
 const defaultValues = {
@@ -38,7 +41,8 @@ const defaultValues = {
     employee_ids: [],   
 }
 
-export default function AddTask() {
+export default function EditTask() {
+    const { taskid } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [selectedNames, setSelectedNames] = useState([]);
@@ -56,23 +60,45 @@ export default function AddTask() {
             console.log('Error fetching employees:', error);
         });
     };
+    
+    const fetchTaskDetails = () => {
+        axiosInstance.get(`/tasks/${taskid}`).then(resp => {
+          if (resp.status >= 200 && resp.status <= 299) {
+            reset({
+              title: resp.data.title,
+              description: resp.data.description,
+              priority: resp.data.priority,
+              target_date: dayjs(resp.data.target_date),
+              employee_ids: resp.data.employees.map(emp => emp.id),
+            });
+            setSelectedNames(resp.data.employees);
+          } else {
+            toast.error("Failed to fetch task details.");
+          }
+        }).catch(error => {
+            toast.error("Failed to fetch task details.");
+            console.log('Error fetching task details:', error);
+        });
+    };
   
-    const { control, handleSubmit, setError, formState: { errors }} = useForm({
+    const { control, handleSubmit, setError, formState: { errors }, reset} = useForm({
       resolver: zodResolver(formSchema),
-      defaultValues: defaultValues
+      defaultValues,
     });
   
     const onSubmit = handleSubmit(async (data) => {
+      console.log(`Updating task with data: ${JSON.stringify(data)}`);
       setLoading(true);
       const customConfig = { headers: { 'Content-Type': 'application/json' } }
       const params = {
         title: data.title,
         description: data.description,
         priority: data.priority,
-        target_date: data.target_date,
+        target_date: dayjs(data.target_date).format('YYYY-MM-DD'),
         employee_ids: selectedNames.map(emp => emp.id),   
       }
-      axiosInstance.post('/tasks', JSON.stringify(params), customConfig).then(resp => {
+      console.log(`Updating task with params: ${JSON.stringify(params)}`);
+      axiosInstance.put(`/tasks/${taskid}/`, JSON.stringify(params), customConfig).then(resp => {
         setLoading(false);
         if (resp.status >= 200 && resp.status <= 299) {
           setSelectedNames([]); 
@@ -85,14 +111,15 @@ export default function AddTask() {
     })
 
     useEffect(() => {
-        fetchEmployees();
-      }, []);
+      fetchEmployees();
+      fetchTaskDetails();
+    }, []);
 
     return (
         <>
         <Toolbar />
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <h3>Add Task</h3>  
+        <h3>Edit Task</h3>  
         <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
@@ -124,7 +151,7 @@ export default function AddTask() {
                         <FormControl fullWidth>
                             <Controller name='target_date' control={control} render={({ field: { value, onChange } }) => (
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker label="Target Date" value={null} onChange={(val) => {
+                                <DatePicker label="Target Date" value={dayjs(value)} onChange={(val) => {  
                                   onChange(dayjs(val).format('YYYY-MM-DD'));
                                 }} format="DD-MM-YYYY" views={["year", "month", "day"]}
                                   slots={{  
@@ -150,6 +177,7 @@ export default function AddTask() {
                       </Stack>
                     )}
                     onChange={(e) => {
+                      console.log("Selected Names: ", e.target.value);
                       setSelectedNames(e.target.value)
                     }}
                     input={<OutlinedInput label="Multiple Select" />}>

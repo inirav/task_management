@@ -12,8 +12,8 @@ class User(Base):
 
 
 task_employee_association = Table('task_employee_association', Base.metadata,
-    Column('task_id', Integer, ForeignKey('tasks.id')),
-    Column('employee_id', Integer, ForeignKey('employees.id'))
+    Column('task_id', Integer, ForeignKey('tasks.id', ondelete='CASCADE')),
+    Column('employee_id', Integer, ForeignKey('employees.id', ondelete='CASCADE'))
 )
 
 class Employee(Base):
