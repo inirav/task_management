@@ -6,7 +6,13 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { Controller, useForm } from 'react-hook-form'
-import { FormControl, FormHelperText } from '@mui/material'
+import { FormControl, FormHelperText, Chip, OutlinedInput, Stack } from '@mui/material'
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../axiosConfig';
 import { useNavigate, Link } from 'react-router-dom';
@@ -18,7 +24,7 @@ const formSchema =  z.object({
     title: z.string().min(3),
     description: z.string().optional(),
     priority: z.string(),
-    target_date: z.date(),
+    target_date: z.string(),
     employee_ids: z.array(),
 })
   
@@ -30,10 +36,10 @@ const defaultValues = {
     employee_ids: [],   
 }
 
-
 export default function AddTask() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [selectedNames, setSelectedNames] = useState([]);
     const priorities = ['Low', 'Medium', 'High', 'Urgent'];
 
     const [employees, setEmployees] = useState([]);
@@ -59,21 +65,22 @@ export default function AddTask() {
       setLoading(true);
       const customConfig = { headers: { 'Content-Type': 'application/json' } }
       const params = {
-        title: "",
-        description: "",
-        priority: "",
-        target_date: "",
-        employee_ids: [],   
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        target_date: data.target_date,
+        employee_ids: employees.map(emp => emp.id),   
       }
-      axiosInstance.post('/tasks', JSON.stringify(params), customConfig).then(resp => {
-        setLoading(false);
-        if (resp.status >= 200 && resp.status <= 299) {
-            navigate("/tasks");
-        }
-      }).catch(err => {
-          setLoading(false);
-          toast.error("Failed to add employee.");
-      });
+      console.log(`Adding task with params: ${JSON.stringify(params)}`);
+    //   axiosInstance.post('/tasks', JSON.stringify(params), customConfig).then(resp => {
+    //     setLoading(false);
+    //     if (resp.status >= 200 && resp.status <= 299) {
+    //         navigate("/tasks");
+    //     }
+    //   }).catch(err => {
+    //       setLoading(false);
+    //       toast.error("Failed to add employee.");
+    //   });
     })
 
     useEffect(() => {
@@ -97,22 +104,59 @@ export default function AddTask() {
                 </FormControl>
                 <Grid container spacing={3}>
                     <Grid item sm={6}>
-                    <FormControl>
-                        <Controller name='title' control={control} render={({ field: { value, onChange } }) => (
-                            <TextField margin="normal" value={value} label='Title' onChange={onChange} error={Boolean(errors.title)} required />
-                        )}/>
-                        {errors.title && ( <FormHelperText sx={{ color: 'error.main' }}>{errors.title.message}</FormHelperText> )}
-                    </FormControl>
-                    <Grid item sm={6}>
-                        <FormControl>
-                            <Controller name='title' control={control} render={({ field: { value, onChange } }) => (
-                                <TextField margin="normal" value={value} label='Title' onChange={onChange} error={Boolean(errors.title)} required />
-                            )}/>
-                            {errors.title && ( <FormHelperText sx={{ color: 'error.main' }}>{errors.title.message}</FormHelperText> )}
+                        <FormControl fullWidth>
+                        <Controller name="priority" control={control} render={({ field: { value, onChange } }) => (
+                            <>
+                                <InputLabel id="demo-simple-select-label">Priority</InputLabel>
+                                <Select labelId="demo-simple-select-label" id="demo-simple-select" value={value} label="Priority" onChange={(val) => {
+                                    onChange(val);
+                                }}>
+                                {priorities.map((priority, i) => (
+                                    <MenuItem key={i} value={priority}>{priority}</MenuItem>
+                                ))}    
+                                </Select>
+                            </>
+                            )}
+                        />
+                        {errors.priority && ( <FormHelperText sx={{ color: "error.main" }}>{errors.priority.message}</FormHelperText> )}
                         </FormControl>
-                        </Grid>
+                    </Grid>
+                    <Grid item sm={6}>
+                        <FormControl fullWidth>
+                            <Controller name='target_date' control={control} render={({ field: { value, onChange } }) => (
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DateTimePicker label="Target Date" value={null} onChange={(newValue) => {}} format="DD-MM-YYYY" views={["year", "month", "day"]}
+                                  slots={{
+                                    textField: (params) => (
+                                      <TextField variant="filled" {...params} />
+                                    ),
+                                  }}
+                                />
+                              </LocalizationProvider>
+                            )}/>
+                            {errors.target_date && ( <FormHelperText sx={{ color: 'error.main' }}>{errors.target_date.message}</FormHelperText> )}
+                        </FormControl>
                     </Grid>
                 </Grid>
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel>Employees</InputLabel>
+                  <Select multiple value={selectedNames}
+                    renderValue={(selected) => (
+                      <Stack gap={1} direction="row" flexWrap="wrap">
+                        {selected.map((value) => (
+                          <Chip key={value} label={value} />
+                        ))}
+                      </Stack>
+                    )}
+                    onChange={(e) => setSelectedNames(e.target.value)}
+                    input={<OutlinedInput label="Multiple Select" />}>
+                    {employees.map((emp) => (
+                      <MenuItem key={emp.id} value={emp.name}>
+                        {emp.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <FormControl fullWidth>
                     <Controller name='description' control={control} render={({ field: { value, onChange } }) => (
                         <TextField margin="normal" fullWidth multiline rows={3} value={value} label='Description' onChange={onChange} error={Boolean(errors.description)} required />
