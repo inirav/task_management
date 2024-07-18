@@ -2,14 +2,20 @@ import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import { Link } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import axiosInstance from '../../axiosConfig';
+import toast from 'react-hot-toast';
+import dayjs from 'dayjs';
 
 
 export default function Tasks() {
@@ -17,10 +23,27 @@ export default function Tasks() {
   
     const fetchTasks = () => {
         axiosInstance.get('/tasks').then(resp => {
-            console.log(`resp: ${JSON.stringify(resp.data)}`);
-            setTasks(resp.data);
+            if (resp.status >= 200 && resp.status <= 299) {
+                setTasks(resp.data);
+            } else {
+                toast.error("Failed to fetch tasks.");
+            }
         }).catch(error => {
+            toast.error("Failed to fetch tasks.");
             console.error('Error fetching tasks:', error);
+        });
+    };
+
+    const deleteTask = (id) => {
+        axiosInstance.delete(`/tasks/${id}`).then(resp => {
+            if (resp.status >= 200 && resp.status <= 299) {
+                fetchTasks();
+            } else {
+                toast.error("Failed to delete task.");
+            }
+        }).catch(error => {
+            toast.error("Failed to delete task.");
+            console.log('Error deleting task:', error);
         });
     };
 
@@ -31,8 +54,11 @@ export default function Tasks() {
     return (
         <>
         <Toolbar />
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <h3>Tasks</h3>        
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>    
+        <Box display="flex" justifyContent="space-between">
+            <h3>Tasks</h3>    
+            <Button variant="contained" color="primary" sx={{ mt: 3, mb: 2 }} component={Link} to="/tasks/add" >Add Task</Button>
+        </Box>    
         <Grid container spacing={3}>
             <Grid item xs={12}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
@@ -44,10 +70,11 @@ export default function Tasks() {
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
                         <TableHead>
                             <TableRow>
-                                <TableCell>Title</TableCell>
-                                <TableCell>Description</TableCell>
-                                <TableCell align="right">Target Date</TableCell>
-                                <TableCell>Priority</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Title</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Description</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }} align="right">Target Date</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Priority</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -57,9 +84,12 @@ export default function Tasks() {
                             <TableCell component="th" scope="row">
                                 {item.title}
                             </TableCell>
-                            <TableCell>{item.description}</TableCell>
-                            <TableCell align="right">{item.target_date}</TableCell>
+                            <TableCell>{item.description || 'No Description'}</TableCell>
+                            <TableCell align="right">{dayjs(item.target_date).format('DD MMM YYYY')}</TableCell>
                             <TableCell>{item.priority}</TableCell>
+                            <TableCell>
+                                <DeleteOutlineIcon color='error' onClick={() => deleteTask(item.id)} />
+                            </TableCell>
                             </TableRow>
                         ))}
                         </TableBody>

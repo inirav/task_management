@@ -14,13 +14,16 @@ import Toolbar from '@mui/material/Toolbar';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { Outlet, Link } from "react-router-dom";
-
+import TaskIcon from '@mui/icons-material/Task';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PeopleIcon from '@mui/icons-material/People';
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -72,10 +75,17 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme();
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
+
+  const logout = () => { 
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
+    navigate("/login");
+  } 
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -114,35 +124,37 @@ export default function HomePage() {
           <List component="nav">
             <ListItemButton component={Link} to="/">
                 <ListItemIcon>
-                    <DashboardIcon />
+                  <TaskIcon />
                 </ListItemIcon>
                 <ListItemText primary="Tasks" />
             </ListItemButton>
             <ListItemButton component={Link} to="/employees">
                 <ListItemIcon>
-                    <ShoppingCartIcon />
+                    <PeopleIcon />
                 </ListItemIcon>
                 <ListItemText primary="Employees" />
             </ListItemButton>
             <ListItemButton component={Link} to="/users">
                 <ListItemIcon>
-                    <PeopleIcon />
+                    <AccountCircleIcon />
                 </ListItemIcon>
                 <ListItemText primary="Users" />
+            </ListItemButton>
+            <ListItemButton onClick={() => logout()}>
+                <ListItemIcon>
+                    <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
             </ListItemButton>
           </List>
         </Drawer>
         <Box component="main"
           sx={{
-            backgroundColor: (theme) =>
-              theme.palette.mode === 'light'
-                ? theme.palette.grey[100]
-                : theme.palette.grey[900],
+            backgroundColor: (theme) => theme.palette.mode === 'light' ? theme.palette.grey[100] : theme.palette.grey[900],
             flexGrow: 1,
             height: '100vh',
             overflow: 'auto',
-          }}
-        >
+          }}>
           <Outlet/>  
         </Box>
       </Box>

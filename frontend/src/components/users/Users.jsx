@@ -10,6 +10,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../axiosConfig';
+import toast from 'react-hot-toast';
 
 
 export default function Users() {
@@ -17,9 +18,13 @@ export default function Users() {
   
     const fetchUsers = () => {
         axiosInstance.get('/users').then(resp => {
-            console.log(`resp: ${JSON.stringify(resp.data)}`);
-            setUsers(resp.data);
+            if (resp.status >= 200 && resp.status <= 299) {
+                setUsers(resp.data);
+            } else {
+                toast.error("Failed to fetch employees.");
+            }
         }).catch(error => {
+            toast.error("Failed to fetch employees.");
             console.log('Error fetching users:', error);
         });
     };
@@ -44,14 +49,16 @@ export default function Users() {
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
                         <TableHead>
                             <TableRow>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Sr. No.</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Full Name</TableCell>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Username</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                        {users.map((item) => (
+                        {users.map((item, i) => (
                             <TableRow key={item.id}
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                            <TableCell>{i + 1}</TableCell>    
                             <TableCell component="th" scope="row">
                                 {item.full_name || 'Not Available'}
                             </TableCell>

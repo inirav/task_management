@@ -12,14 +12,15 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axiosInstance from '../axiosConfig';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 
 const defaultTheme = createTheme();
 
 export default function LoginPage() {
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -40,6 +41,7 @@ export default function LoginPage() {
         }
     }).catch(err => {
         setLoading(false);
+        toast.error("Invalid username or password");
         console.log(`error: ${err}`);
     });
   };
@@ -59,7 +61,7 @@ export default function LoginPage() {
             <Button type="submit" disabled={loading} fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>{ loading ? 'Loading...' : 'Login' }</Button>
             <Grid container>
               <Grid item>
-                <Link href="/register" variant="body2">
+                <Link component={RouterLink} to="/register" variant="body2">
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>

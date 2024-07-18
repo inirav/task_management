@@ -3,7 +3,9 @@ import LoginPage from './pages/LoginPage.jsx'
 import HomePage from './pages/HomePage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import Tasks from './components/tasks/Tasks.jsx'
+import AddTask from './components/tasks/AddTask.jsx'
 import Employees from './components/employees/Employees.jsx'
+import AddEmployee from './components/employees/AddEmployee.jsx'
 import Users from './components/users/Users.jsx'
 
 function App() {
@@ -12,7 +14,11 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />}>
           <Route index element={<Tasks />} />
-          <Route path="employees" element={<Employees />} />
+          <Route path="tasks/add" element={<AddTask />} />
+          <Route path="employees">
+            <Route index element={<Employees />} />
+            <Route path="add" element={<AddEmployee />} />
+          </Route>
           <Route path="users" element={<Users />} />
         </Route>
         <Route path="/login" element={<LoginPage />}></Route>

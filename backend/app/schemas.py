@@ -42,6 +42,7 @@ class Task(TaskBase):
 
 
 class UserBase(BaseModel):
+    full_name: str
     username: str
 
 

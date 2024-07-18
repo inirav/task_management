@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, redirect } from 'react-router-dom';
 
 const axiosInstance = axios.create({
     baseURL: 'http://127.0.0.1:8000',
@@ -26,14 +26,13 @@ axiosInstance.interceptors.response.use(
     error => {      
       const token = localStorage.getItem('token');
       if (!token) {
-          window.location.href = "/login";
+          redirect("/login");
           return;
       }
       if (error.response && error.response.status == 403) {
         localStorage.removeItem("token");
         localStorage.removeItem("refresh_token");
-        const navigate = useNavigate();
-        navigate("/login");
+        redirect("/login");
       }
       if (error.response && error.response.status == 401) {
         console.log(`calling interceptor for 401`);
