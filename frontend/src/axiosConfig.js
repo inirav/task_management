@@ -25,14 +25,14 @@ axiosInstance.interceptors.response.use(
     },
     error => {      
       const token = localStorage.getItem('token');
-      if (!token) {
-          redirect("/login");
+      if (!token && window.location.pathname != "/login" && window.location.pathname != "/register") {
+          window.location.href="/login";
           return;
       }
       if (error.response && error.response.status == 403) {
         localStorage.removeItem("token");
         localStorage.removeItem("refresh_token");
-        redirect("/login");
+        window.location.href="/login";
       }
       if (error.response && error.response.status == 401) {
         console.log(`calling interceptor for 401`);

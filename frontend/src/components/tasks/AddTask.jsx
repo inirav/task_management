@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { Controller, useForm } from 'react-hook-form'
 import { FormControl, FormHelperText, Chip, OutlinedInput, Stack } from '@mui/material'
+import CancelIcon from '@mui/icons-material/Cancel';
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -15,7 +16,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../axiosConfig';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from "zod";
 import dayjs from 'dayjs';
@@ -145,7 +146,16 @@ export default function AddTask() {
                     renderValue={(selected) => (
                       <Stack gap={1} direction="row" flexWrap="wrap">
                         {selected.map((value) => (
-                          <Chip key={value.id} label={value.name} />
+                          <Chip key={value.id} label={value.name} onDelete={() =>
+                            setSelectedNames(
+                              selectedNames.filter((item) => item !== value)
+                            )
+                          }
+                          deleteIcon={
+                            <CancelIcon
+                              onMouseDown={(event) => event.stopPropagation()}
+                            />
+                          } />
                         ))}
                       </Stack>
                     )}

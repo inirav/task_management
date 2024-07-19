@@ -1,11 +1,11 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from fastapi import Depends
-from typing import Annotated
-from sqlalchemy.orm import Session
+from dotenv import load_dotenv
+load_dotenv()
 
-DATABASE_URL = "postgresql://postgres:3693@localhost:5432/TaskApp"
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
 
@@ -19,5 +19,4 @@ def get_db():
         yield db
     finally:
         db.close()
-
-# db_dependency = Annotated[Session, Depends(get_db)]         
+   

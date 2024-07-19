@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { Controller, useForm } from 'react-hook-form'
 import { FormControl, FormHelperText, Chip, OutlinedInput, Stack } from '@mui/material'
+import CancelIcon from '@mui/icons-material/Cancel';
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -172,7 +173,16 @@ export default function EditTask() {
                     renderValue={(selected) => (
                       <Stack gap={1} direction="row" flexWrap="wrap">
                         {selected.map((value) => (
-                          <Chip key={value.id} label={value.name} />
+                          <Chip key={value.id} label={value.name} onDelete={() =>
+                            setSelectedNames(
+                              selectedNames.filter((item) => item !== value)
+                            )
+                          }
+                          deleteIcon={
+                            <CancelIcon
+                              onMouseDown={(event) => event.stopPropagation()}
+                            />
+                          } />
                         ))}
                       </Stack>
                     )}
